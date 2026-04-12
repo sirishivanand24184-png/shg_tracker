@@ -11,7 +11,7 @@ import java.util.List;
 import java.util.Optional;
 
 @RestController
-@RequestMapping("/reports")
+@RequestMapping("/api/report-records")
 @CrossOrigin(origins = "*")
 public class MonthlyReportController {
     

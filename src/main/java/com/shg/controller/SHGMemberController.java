@@ -11,7 +11,7 @@ import java.util.List;
 import java.util.Optional;
 
 @RestController
-@RequestMapping("/members")
+@RequestMapping("/api/member-records")
 @CrossOrigin(origins = "*")
 public class SHGMemberController {
     

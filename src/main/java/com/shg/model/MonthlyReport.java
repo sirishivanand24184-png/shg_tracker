@@ -11,10 +11,10 @@ public class MonthlyReport {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     
-    @Column(nullable = false)
+    @Column(name = "report_month", nullable = false)
     private Integer month;
     
-    @Column(nullable = false)
+    @Column(name = "report_year", nullable = false)
     private Integer year;
     
     @Column(nullable = false)

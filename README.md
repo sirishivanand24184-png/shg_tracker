@@ -1,5 +1,14 @@
 # SHG Financial Tracker
 
+## Submission Notes
+
+- The project now supports both the original console flow and the Spring Boot web flow.
+- The app runs by default with an embedded H2 database, so no local MySQL setup is required for evaluation.
+- Existing MySQL usage is still supported through environment variables in `application.properties`.
+- Seed/demo data is loaded automatically at startup for groups, members, transactions, advisory items, and discussions.
+- Verified REST endpoints used by the frontend live under `/api/...`.
+- Automated tests are available under `src/test/java` and currently pass with `mvn test`.
+
 A comprehensive Java console-based application for Self-Help Groups (SHGs) to track financial activities, receive advisory recommendations, and facilitate collective decision-making.
 
 ## 📋 Project Overview

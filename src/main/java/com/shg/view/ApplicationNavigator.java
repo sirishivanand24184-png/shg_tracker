@@ -1,9 +1,12 @@
 package com.shg.view;
 
+import com.shg.service.ConsolePlatformService;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Scanner;
+import java.util.stream.Collectors;
 
 /**
  * ApplicationNavigator is the main entry point for the SHG Financial Tracking
@@ -29,6 +32,8 @@ public class ApplicationNavigator {
     private String currentUser  = null;
     /** Currently authenticated user's role (null = not logged in). */
     private String currentRole  = null;
+
+    private final ConsolePlatformService consolePlatformService = new ConsolePlatformService();
 
     // ------------------------------------------------------------------ //
     //  View instances
@@ -104,7 +109,6 @@ public class ApplicationNavigator {
     /** Handles the login interaction. Navigates to the dashboard on success. */
     private void handleLogin() {
         String[] credentials = loginView.showLoginForm();
-        // --- Stub authentication: accept any non-blank username/password ---
         String username = credentials[0];
         String password = credentials[1];
 
@@ -113,13 +117,12 @@ public class ApplicationNavigator {
             return;
         }
 
-        // Assign a demo role based on username prefix for demo purposes
-        String role = detectDemoRole(username);
-        currentUser = username;
-        currentRole = role;
-
-        loginView.showLoginSuccess(username, role);
-        runDashboardLoop();
+        consolePlatformService.authenticate(username, password).ifPresentOrElse(user -> {
+            currentUser = user.fullName;
+            currentRole = user.role;
+            loginView.showLoginSuccess(currentUser, currentRole);
+            runDashboardLoop();
+        }, () -> loginView.showError("Invalid username or password."));
     }
 
     /** Handles the registration interaction. */
@@ -128,9 +131,14 @@ public class ApplicationNavigator {
         if (data == null) {
             return; // cancelled due to password mismatch
         }
-        String name     = data[0];
+        String name = data[0];
         String username = data[1];
-        // data[2] = password, data[3] = role
+        String password = data[2];
+        String role = data[3];
+        if (!consolePlatformService.register(name, username, password, role)) {
+            loginView.showError("Username already exists. Please choose another one.");
+            return;
+        }
         loginView.showRegistrationSuccess(username);
         UIUtility.printInfo("Registration stored. Please log in.");
     }
@@ -147,13 +155,13 @@ public class ApplicationNavigator {
         boolean loggedIn = true;
         while (loggedIn) {
             dashboardView.showGroupOverview(
-                    "Shakti Mahila Sangha",
-                    12,
-                    85_000.00,
+                    consolePlatformService.getGroupName(),
+                    consolePlatformService.getMemberCount(),
+                    consolePlatformService.getGroupBalance(),
                     currentUser,
                     currentRole);
 
-            dashboardView.showMemberList(demoMemberList());
+            dashboardView.showMemberList(consolePlatformService.getMemberLabels());
 
             int choice = dashboardView.showMainMenu(currentRole);
             switch (choice) {
@@ -202,6 +210,7 @@ public class ApplicationNavigator {
                     String typeName = typeLabel(typeChoice);
                     String[] txData = financeView.showTransactionForm(typeName);
                     double amount = Double.parseDouble(txData[0]);
+                    consolePlatformService.recordTransaction(typeName, amount, txData[1], txData[2], currentUser);
                     financeView.showTransactionRecorded(typeName, amount);
                     UIUtility.pauseForInput(scanner);
                     break;
@@ -210,12 +219,15 @@ public class ApplicationNavigator {
                     if (filterChoice == 5) {
                         String[] dates = financeView.showDateRangeInput();
                         UIUtility.printInfo("Showing transactions from " + dates[0] + " to " + dates[1]);
+                        financeView.showTransactionHistory(consolePlatformService.getTransactions(filterChoice, dates[0], dates[1]));
+                    } else {
+                        financeView.showTransactionHistory(consolePlatformService.getTransactions(filterChoice, null, null));
                     }
-                    financeView.showTransactionHistory(demoTransactions());
                     UIUtility.pauseForInput(scanner);
                     break;
                 case 3: // Balance
-                    financeView.showBalance(52_000, 20_000, 8_500, 23_500);
+                    double[] summary = consolePlatformService.getBalanceSummary();
+                    financeView.showBalance(summary[0], summary[1], summary[2], summary[3]);
                     UIUtility.pauseForInput(scanner);
                     break;
                 case 4: // Back
@@ -239,15 +251,16 @@ public class ApplicationNavigator {
                 case 1: // Monthly summary
                     String[] my = reportView.showMonthYearInput();
                     String monthLabel = monthName(Integer.parseInt(my[0])) + " " + my[1];
-                    reportView.showMonthlySummary(monthLabel, 18_000, 7_000, 3_200, 7_800);
+                    double[] reportSummary = consolePlatformService.getBalanceSummary();
+                    reportView.showMonthlySummary(monthLabel, reportSummary[0], reportSummary[1], reportSummary[2], reportSummary[3]);
                     UIUtility.pauseForInput(scanner);
                     break;
                 case 2: // Comparative
-                    reportView.showComparativeReport(demoComparativeData());
+                    reportView.showComparativeReport(consolePlatformService.getComparativeData());
                     UIUtility.pauseForInput(scanner);
                     break;
                 case 3: // Investment comparison
-                    reportView.showInvestmentComparison(demoInvestmentPlans());
+                    reportView.showInvestmentComparison(consolePlatformService.getInvestmentComparison());
                     UIUtility.pauseForInput(scanner);
                     break;
                 case 4: // Back
@@ -269,19 +282,19 @@ public class ApplicationNavigator {
             int choice = advisoryView.showAdvisoryMenu();
             switch (choice) {
                 case 1: // Investment plans
-                    advisoryView.showInvestmentPlans(demoBrokerPlans());
+                    advisoryView.showInvestmentPlans(consolePlatformService.getBrokerPlans());
                     UIUtility.pauseForInput(scanner);
                     break;
                 case 2: // Government schemes
-                    advisoryView.showGovernmentSchemes(demoGovSchemes());
+                    advisoryView.showGovernmentSchemes(consolePlatformService.getGovernmentSchemes());
                     UIUtility.pauseForInput(scanner);
                     break;
                 case 3: // AI recommendations
-                    advisoryView.showAIRecommendations(demoRecommendations());
+                    advisoryView.showAIRecommendations(consolePlatformService.getRecommendations());
                     UIUtility.pauseForInput(scanner);
                     break;
                 case 4: // Discuss recommendation
-                    List<String[]> recs = demoRecommendations();
+                    List<String[]> recs = consolePlatformService.getRecommendations();
                     advisoryView.showAIRecommendations(recs);
                     int sel = advisoryView.showRecommendationSelection(recs.size());
                     UIUtility.printInfo("Opening discussion for: " + recs.get(sel - 1)[0]);
@@ -306,15 +319,19 @@ public class ApplicationNavigator {
             int choice = discussionView.showDiscussionMenu();
             switch (choice) {
                 case 1: // View all
-                    discussionView.showDiscussionList(demoDiscussions());
+                    discussionView.showDiscussionList(consolePlatformService.getDiscussions());
                     String id = discussionView.showSelectDiscussion();
+                    ConsolePlatformService.ConsoleDiscussion discussion = consolePlatformService.getDiscussionById(id);
                     discussionView.showDiscussionThread(
-                            "Monthly Savings Target",
-                            "Priya S.",
-                            "01-03-2024",
-                            demoComments());
+                            discussion.title,
+                            discussion.author,
+                            UIUtility.today(),
+                            discussion.comments.stream()
+                                    .map(comment -> new String[]{comment.author, comment.timestamp.toString(), comment.content})
+                                    .collect(Collectors.toList()));
                     String comment = discussionView.showAddCommentForm();
                     if (!comment.isEmpty()) {
+                        consolePlatformService.addComment(id, currentUser, comment);
                         discussionView.showCommentPosted();
                     }
                     UIUtility.pauseForInput(scanner);
@@ -322,12 +339,13 @@ public class ApplicationNavigator {
                 case 2: // New discussion
                     String[] nd = discussionView.showNewDiscussionForm();
                     if (!nd[0].isEmpty()) {
+                        consolePlatformService.addDiscussion(nd[0], nd[1], currentUser, "General");
                         discussionView.showDiscussionCreated(nd[0]);
                     }
                     UIUtility.pauseForInput(scanner);
                     break;
                 case 3: // Recommendation discussions
-                    discussionView.showRecommendationDiscussions(demoRecDiscussions());
+                    discussionView.showRecommendationDiscussions(consolePlatformService.getRecommendationDiscussions());
                     UIUtility.pauseForInput(scanner);
                     break;
                 case 4: // Back
@@ -349,22 +367,29 @@ public class ApplicationNavigator {
             int choice = adminView.showAdminMenu();
             switch (choice) {
                 case 1: // Pending brokers
-                    adminView.showPendingBrokers(demoPendingBrokers());
+                    adminView.showPendingBrokers(consolePlatformService.getPendingBrokers());
                     String[] action = adminView.showBrokerActionForm();
                     boolean approved = "approve".equals(action[1]);
                     if (!approved) {
                         adminView.showRejectionReasonForm();
                     }
-                    adminView.showBrokerVerificationResult("Demo Broker", approved);
+                    adminView.showBrokerVerificationResult(consolePlatformService.verifyBroker(action[0], approved), approved);
                     UIUtility.pauseForInput(scanner);
                     break;
                 case 2: // Statistics
-                    adminView.showPlatformStatistics(48, 5, 320, 4_25_000, 3);
+                    Object[] statistics = consolePlatformService.getPlatformStatistics();
+                    adminView.showPlatformStatistics(
+                            ((Number) statistics[0]).intValue(),
+                            ((Number) statistics[1]).intValue(),
+                            ((Number) statistics[2]).intValue(),
+                            ((Number) statistics[3]).doubleValue(),
+                            ((Number) statistics[4]).intValue());
                     UIUtility.pauseForInput(scanner);
                     break;
                 case 3: // Settings
-                    adminView.showSystemSettings(demoSettings());
+                    adminView.showSystemSettings(consolePlatformService.getSettings());
                     String[] update = adminView.showUpdateSettingForm();
+                    consolePlatformService.updateSetting(update[0], update[1]);
                     UIUtility.printSuccess("Setting '" + update[0] + "' updated to '" + update[1] + "'.");
                     UIUtility.pauseForInput(scanner);
                     break;

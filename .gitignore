@@ -1,5 +1,6 @@
 # Maven build output
 target/
+.m2-temp/
 
 # IDE files
 .idea/

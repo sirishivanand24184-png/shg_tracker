@@ -11,7 +11,7 @@ import java.util.List;
 import java.util.Optional;
 
 @RestController
-@RequestMapping("/groups")
+@RequestMapping("/api/groups")
 @CrossOrigin(origins = "*")
 public class SHGGroupController {
     

@@ -1,340 +1,249 @@
 # SHG Financial Tracker
 
-## Submission Notes
+A Java-based SHG Financial Tracking and Advisory Platform for managing savings, loans, expenses, reports, recommendations, discussions, and admin workflows.
 
-- The project now supports both the original console flow and the Spring Boot web flow.
-- The app runs by default with an embedded H2 database, so no local MySQL setup is required for evaluation.
-- Existing MySQL usage is still supported through environment variables in `application.properties`.
-- Seed/demo data is loaded automatically at startup for groups, members, transactions, advisory items, and discussions.
-- Verified REST endpoints used by the frontend live under `/api/...`.
-- Automated tests are available under `src/test/java` and currently pass with `mvn test`.
+This project now supports:
+- a Spring Boot web application with HTML pages and REST APIs
+- a Java console application for menu-driven demonstration
+- seed/demo data for easy evaluation
+- embedded H2 database by default, with optional MySQL configuration
 
-A comprehensive Java console-based application for Self-Help Groups (SHGs) to track financial activities, receive advisory recommendations, and facilitate collective decision-making.
+## Overview
 
-## üìã Project Overview
+The system is designed for Self-Help Groups (SHGs) to:
+- maintain transparent financial records
+- track savings, loans, and expenses
+- view monthly and comparative reports
+- access investment plans and government schemes
+- discuss decisions collectively
+- manage members and broker verification workflows
 
-The **SHG Financial Tracking & Advisory Platform** is designed specifically for SHGs (typically 10-20 members) to:
-- Maintain transparent financial records (savings, loans, expenses)
-- Receive authenticated advisory inputs from verified brokers and government representatives
-- Access government schemes and investment opportunities
-- Support collective, democratic decision-making
+## Implemented Features
 
-### Core Features:
-‚úÖ **Financial Tracking** - Record and aggregate transactions  
-‚úÖ **Monthly Reports** - Generate summaries and comparisons  
-‚úÖ **Advisory Module** - Access investment plans and government schemes  
-‚úÖ **Discussion Forum** - Group-based collaborative discussions  
-‚úÖ **Role-Based Access** - Member, Treasurer, Leader, Broker, Admin roles  
-‚úÖ **Console-Based UI** - Interactive menu-driven interface  
+- Financial tracking
+  Record and view transactions for savings, loans, and expenses.
+- Reports
+  Generate monthly summaries and multi-month comparisons.
+- Advisory
+  View investment plans, government schemes, and recommendations.
+- Discussions
+  Create discussion threads and add comments.
+- Admin support
+  View platform statistics, broker verification data, and settings.
+- Authentication
+  Login and registration APIs for the web UI.
+- Console mode
+  Interactive menu-driven version via `ApplicationNavigator`.
 
----
+## Tech Stack
 
-## üèóÔ∏è Architecture
+- Java 11
+- Spring Boot 2.7
+- Spring MVC
+- Spring Data JPA
+- Thymeleaf
+- H2 Database
+- Maven
+- JUnit 5
 
-The project follows **MVC (Model-View-Controller)** architecture:
+## Run The Project
 
-```
-src/main/java/com/shg/
-‚îú‚îÄ‚îÄ model/          # Entity classes (SHGGroup, Transaction, etc.)
-‚îú‚îÄ‚îÄ view/           # Console UI components
-‚îú‚îÄ‚îÄ controller/     # Business logic & API handlers
-‚îú‚îÄ‚îÄ service/        # Business logic engines
-‚îî‚îÄ‚îÄ repository/     # In-memory data storage
-```
+### Option 1: Run the Web UI
 
-### Current Status:
-- ‚úÖ **UI Layer** - Complete (9 view classes)
-- üîÑ **Model Layer** - In Progress
-- ‚è≥ **Controller Layer** - Coming Soon
-- ‚è≥ **Business Logic** - Coming Soon
-
----
-
-## üöÄ Getting Started
-
-### Prerequisites
-
-Before running the application, ensure you have:
-- **Java 11** or higher
-- **Maven 3.6** or higher
-
-#### Install Java:
 ```bash
-# On macOS (using Homebrew)
-brew install java11
-
-# On Ubuntu/Debian
-sudo apt-get install openjdk-11-jdk
-
-# On Windows
-# Download from https://www.oracle.com/java/technologies/javase-jdk11-downloads.html
+mvn spring-boot:run
 ```
 
-#### Install Maven:
-```bash
-# On macOS (using Homebrew)
-brew install maven
+Then open:
+- `http://localhost:8080/`
 
-# On Ubuntu/Debian
-sudo apt-get install maven
+Useful pages:
+- `http://localhost:8080/dashboard`
+- `http://localhost:8080/finance/transactions`
+- `http://localhost:8080/finance/reports`
+- `http://localhost:8080/advisory/investments`
+- `http://localhost:8080/advisory/schemes`
+- `http://localhost:8080/advisory/recommendations`
+- `http://localhost:8080/discussion/list`
+- `http://localhost:8080/admin/statistics`
 
-# On Windows
-# Download from https://maven.apache.org/download.cgi
-```
+### Option 2: Run the Console UI
 
-#### Verify Installations:
-```bash
-java -version
-mvn -version
-```
+Run the main method in:
+- `src/main/java/com/shg/view/ApplicationNavigator.java`
 
----
+Or configure your IDE to run `com.shg.view.ApplicationNavigator`.
 
-## üì• Setup Instructions
+## Test The Project
 
-### Step 1: Clone the Repository
-```bash
-git clone https://github.com/vidushi212/shg-financial-tracker.git
-cd shg-financial-tracker
-```
-
-### Step 2: Build the Project
-```bash
-mvn clean package
-```
-
-This command will:
-- Clean any previous builds
-- Compile all Java source files
-- Run tests (if any)
-- Package the application into a JAR file in the `target/` directory
-
-**Expected Output:**
-```
-[INFO] BUILD SUCCESS
-[INFO] Total time: XX.XXX s
-[INFO] Finished at: YYYY-MM-DDTHH:MM:SS+05:30
-```
-
-### Step 3: Run the Application
-
-#### **Option A: Run Using JAR**
-```bash
-java -jar target/shg-financial-tracker-1.0-SNAPSHOT.jar
-```
-
-#### **Option B: Run Using Maven**
-```bash
-mvn exec:java -Dexec.mainClass="com.shg.view.ApplicationNavigator"
-```
-
-#### **Option C: Run in IDE**
-1. Open the project in IntelliJ IDEA or Eclipse
-2. Navigate to `src/main/java/com/shg/view/ApplicationNavigator.java`
-3. Right-click ‚Üí **Run 'ApplicationNavigator.main()'**
-
----
-
-## üéØ Application Flow
-
-Once the application starts, you'll see:
-
-### 1. **Login Screen**
-```
-========== SHG FINANCIAL TRACKER ==========
-1. Login
-2. Register
-3. Exit
-
-Enter your choice (1-3):
-```
-
-**Available Roles During Registration:**
-- **Member** - View reports and participate in discussions
-- **President** - Manage group and members
-- **Secretary/Treasurer** - Record transactions and generate reports
-- **Broker** - Publish investment plans (must be verified by Admin)
-- **Government Officer** - Publish government schemes
-- **Admin** - Verify brokers and manage system
-
-### 2. **Dashboard**
-```
-========== DASHBOARD - Shakti Mahila Sangha ==========
-Group Balance: ‚Çπ45,000
-Members: 15
-Active Members: 14
-
-1. View Transactions
-2. Generate Report
-3. View Advisory
-4. Join Discussion
-5. (Admin) Admin Panel
-6. Logout
-```
-
-### 3. **Main Modules**
-
-#### **Finance Module**
-- Record new transactions (Savings, Loan, Expense)
-- View transaction history with date/type filters
-- Check group balance
-
-#### **Reports Module**
-- View monthly financial summaries
-- Compare multi-month data
-- ASCII bar charts
-- Investment comparison tables
-
-#### **Advisory Module**
-- Browse bank investment plans
-- Explore government schemes
-- View AI-generated recommendations
-- Discuss recommendations with members
-
-#### **Discussion Module**
-- Start new discussions
-- Post and view comments
-- Linked recommendation discussions
-
-#### **Admin Module** (Admin Only)
-- Verify pending brokers
-- Approve/reject advisory submissions
-- View platform statistics
-- Manage system settings
-
----
-
-## üõ†Ô∏è Troubleshooting
-
-### Issue: `mvn: command not found`
-**Solution:** Maven is not in your PATH. Reinstall Maven or add it to system PATH.
-
-### Issue: `javac: command not found`
-**Solution:** Java is not installed or not in PATH. Install Java 11+ and verify with `java -version`.
-
-### Issue: `BUILD FAILURE`
-**Try:**
-```bash
-mvn clean install
-```
-
-### Issue: `Exception in thread "main" java.lang.ClassNotFoundException`
-**Solution:** The JAR wasn't built properly. Run:
-```bash
-mvn clean package -DskipTests
-```
-
-### Issue: Port Already in Use (if using network features)
-**Solution:** Change the port in configuration or kill the process using the port.
-
----
-
-## üìÇ Project Structure
-
-```
-shg-financial-tracker/
-‚îú‚îÄ‚îÄ src/
-‚îÇ   ‚îú‚îÄ‚îÄ main/
-‚îÇ   ‚îÇ   ‚îî‚îÄ‚îÄ java/com/shg/
-‚îÇ   ‚îÇ       ‚îú‚îÄ‚îÄ view/                 # UI Layer (COMPLETE)
-‚îÇ   ‚îÇ       ‚îÇ   ‚îú‚îÄ‚îÄ LoginView.java
-‚îÇ   ‚îÇ       ‚îÇ   ‚îú‚îÄ‚îÄ DashboardView.java
-‚îÇ   ‚îÇ       ‚îÇ   ‚îú‚îÄ‚îÄ FinanceView.java
-‚îÇ   ‚îÇ       ‚îÇ   ‚îú‚îÄ‚îÄ ReportView.java
-‚îÇ   ‚îÇ       ‚îÇ   ‚îú‚îÄ‚îÄ AdvisoryView.java
-‚îÇ   ‚îÇ       ‚îÇ   ‚îú‚îÄ‚îÄ DiscussionView.java
-‚îÇ   ‚îÇ       ‚îÇ   ‚îú‚îÄ‚îÄ AdminView.java
-‚îÇ   ‚îÇ       ‚îÇ   ‚îú‚îÄ‚îÄ UIUtility.java
-‚îÇ   ‚îÇ       ‚îÇ   ‚îî‚îÄ‚îÄ ApplicationNavigator.java
-‚îÇ   ‚îÇ       ‚îú‚îÄ‚îÄ model/                # Entity Classes (IN PROGRESS)
-‚îÇ   ‚îÇ       ‚îú‚îÄ‚îÄ controller/           # Controllers (COMING SOON)
-‚îÇ   ‚îÇ       ‚îú‚îÄ‚îÄ service/              # Business Logic (COMING SOON)
-‚îÇ   ‚îÇ       ‚îî‚îÄ‚îÄ repository/           # Data Storage (COMING SOON)
-‚îÇ   ‚îî‚îÄ‚îÄ test/                         # Unit Tests
-‚îú‚îÄ‚îÄ pom.xml                           # Maven Configuration
-‚îú‚îÄ‚îÄ .gitignore                        # Git Ignore Rules
-‚îî‚îÄ‚îÄ README.md                         # This File
-```
-
----
-
-## üíª Development
-
-### Running with Debug Mode:
-```bash
-mvn clean compile exec:java@debug -Dexec.mainClass="com.shg.view.ApplicationNavigator"
-```
-
-### Running Tests:
 ```bash
 mvn test
 ```
 
-### Building Without Running Tests:
-```bash
-mvn clean package -DskipTests
+## Default Login Credentials
+
+Seed data is loaded automatically at startup.
+
+Use these sample logins:
+- President
+  username: `president.priya`
+  password: `password123`
+- Admin
+  username: `admin.root`
+  password: `admin123`
+- Treasurer
+  username: `treasurer.lakshmi`
+  password: `password123`
+
+## Database Configuration
+
+By default the application runs on embedded H2, so no external database setup is required.
+
+Configuration file:
+- `src/main/resources/application.properties`
+
+To use MySQL instead, set:
+- `SHG_DB_URL`
+- `SHG_DB_USERNAME`
+- `SHG_DB_PASSWORD`
+- `SHG_DB_DRIVER_CLASS_NAME`
+- `SHG_JPA_DIALECT`
+
+## Project Structure
+
+```text
+shg-financial-tracker/
++-- pom.xml
++-- README.md
++-- .gitignore
++-- src
+¶   +-- main
+¶   ¶   +-- java
+¶   ¶   ¶   +-- com
+¶   ¶   ¶       +-- shg
+¶   ¶   ¶           +-- DemoDataLoader.java
+¶   ¶   ¶           +-- SHGFinancialTrackerApplication.java
+¶   ¶   ¶           +-- WebController.java
+¶   ¶   ¶           +-- controller
+¶   ¶   ¶           ¶   +-- AdminApiController.java
+¶   ¶   ¶           ¶   +-- AdvisoryApiController.java
+¶   ¶   ¶           ¶   +-- AuthApiController.java
+¶   ¶   ¶           ¶   +-- DashboardApiController.java
+¶   ¶   ¶           ¶   +-- DiscussionApiController.java
+¶   ¶   ¶           ¶   +-- FinanceApiController.java
+¶   ¶   ¶           ¶   +-- MemberApiController.java
+¶   ¶   ¶           ¶   +-- MonthlyReportController.java
+¶   ¶   ¶           ¶   +-- SHGGroupController.java
+¶   ¶   ¶           ¶   +-- SHGMemberController.java
+¶   ¶   ¶           ¶   +-- TransactionController.java
+¶   ¶   ¶           +-- model
+¶   ¶   ¶           ¶   +-- Comment.java
+¶   ¶   ¶           ¶   +-- Discussion.java
+¶   ¶   ¶           ¶   +-- GovernmentScheme.java
+¶   ¶   ¶           ¶   +-- InvestmentPlan.java
+¶   ¶   ¶           ¶   +-- MonthlyReport.java
+¶   ¶   ¶           ¶   +-- Recommendation.java
+¶   ¶   ¶           ¶   +-- SHGGroup.java
+¶   ¶   ¶           ¶   +-- SHGMember.java
+¶   ¶   ¶           ¶   +-- Transaction.java
+¶   ¶   ¶           +-- repository
+¶   ¶   ¶           ¶   +-- CommentRepository.java
+¶   ¶   ¶           ¶   +-- DiscussionRepository.java
+¶   ¶   ¶           ¶   +-- GovernmentSchemeRepository.java
+¶   ¶   ¶           ¶   +-- InvestmentPlanRepository.java
+¶   ¶   ¶           ¶   +-- MonthlyReportRepository.java
+¶   ¶   ¶           ¶   +-- RecommendationRepository.java
+¶   ¶   ¶           ¶   +-- SHGGroupRepository.java
+¶   ¶   ¶           ¶   +-- SHGMemberRepository.java
+¶   ¶   ¶           ¶   +-- TransactionRepository.java
+¶   ¶   ¶           +-- service
+¶   ¶   ¶           ¶   +-- AdminService.java
+¶   ¶   ¶           ¶   +-- AdvisoryService.java
+¶   ¶   ¶           ¶   +-- AppSettingsService.java
+¶   ¶   ¶           ¶   +-- ConsolePlatformService.java
+¶   ¶   ¶           ¶   +-- DashboardService.java
+¶   ¶   ¶           ¶   +-- DiscussionService.java
+¶   ¶   ¶           ¶   +-- MonthlyReportService.java
+¶   ¶   ¶           ¶   +-- SHGGroupService.java
+¶   ¶   ¶           ¶   +-- SHGMemberService.java
+¶   ¶   ¶           ¶   +-- TransactionService.java
+¶   ¶   ¶           +-- view
+¶   ¶   ¶               +-- AdminView.java
+¶   ¶   ¶               +-- AdvisoryView.java
+¶   ¶   ¶               +-- ApplicationNavigator.java
+¶   ¶   ¶               +-- DashboardView.java
+¶   ¶   ¶               +-- DiscussionView.java
+¶   ¶   ¶               +-- FinanceView.java
+¶   ¶   ¶               +-- LoginView.java
+¶   ¶   ¶               +-- ReportView.java
+¶   ¶   ¶               +-- UIUtility.java
+¶   ¶   +-- resources
+¶   ¶       +-- application.properties
+¶   ¶       +-- sql
+¶   ¶       ¶   +-- schema.sql
+¶   ¶       +-- static
+¶   ¶       ¶   +-- css
+¶   ¶       ¶   ¶   +-- bootstrap.min.css
+¶   ¶       ¶   ¶   +-- responsive.css
+¶   ¶       ¶   ¶   +-- style.css
+¶   ¶       ¶   ¶   +-- theme.css
+¶   ¶       ¶   +-- js
+¶   ¶       ¶       +-- admin.js
+¶   ¶       ¶       +-- advisory.js
+¶   ¶       ¶       +-- api.js
+¶   ¶       ¶       +-- app.js
+¶   ¶       ¶       +-- auth.js
+¶   ¶       ¶       +-- dashboard.js
+¶   ¶       ¶       +-- discussion.js
+¶   ¶       ¶       +-- finance.js
+¶   ¶       ¶       +-- utils.js
+¶   ¶       +-- templates
+¶   ¶           +-- admin
+¶   ¶           ¶   +-- brokers.html
+¶   ¶           ¶   +-- settings.html
+¶   ¶           ¶   +-- statistics.html
+¶   ¶           +-- advisory
+¶   ¶           ¶   +-- discussion.html
+¶   ¶           ¶   +-- investments.html
+¶   ¶           ¶   +-- recommendations.html
+¶   ¶           ¶   +-- schemes.html
+¶   ¶           +-- discussion
+¶   ¶           ¶   +-- detail.html
+¶   ¶           ¶   +-- list.html
+¶   ¶           +-- finance
+¶   ¶           ¶   +-- analytics.html
+¶   ¶           ¶   +-- reports.html
+¶   ¶           ¶   +-- transactions.html
+¶   ¶           +-- admin.html
+¶   ¶           +-- dashboard.html
+¶   ¶           +-- error.html
+¶   ¶           +-- group.html
+¶   ¶           +-- index.html
+¶   ¶           +-- members.html
+¶   ¶           +-- reports.html
+¶   ¶           +-- transaction.html
+¶   +-- test
+¶       +-- java
+¶           +-- com
+¶               +-- shg
+¶                   +-- SHGFinancialTrackerApplicationTests.java
 ```
 
-### Creating an Executable JAR:
-```bash
-mvn clean package
-java -jar target/shg-financial-tracker-1.0-SNAPSHOT.jar
-```
+## Important Notes
 
----
+- Web routes are served through Thymeleaf templates.
+- REST APIs used by the frontend are under `/api/...`.
+- Demo data is auto-loaded on startup.
+- The app is ready to demonstrate without setting up MySQL.
 
-## üì¶ Dependencies
+## Submission Status
 
-The project uses:
-- **Java 11** - Core language
-- **Maven** - Build automation
-- **JUnit 4** (optional) - Unit testing
+- Backend wired and runnable
+- Frontend pages connected to REST APIs
+- Console flow retained
+- Seed data added
+- Tests passing with `mvn test`
 
-All dependencies are managed via `pom.xml`.
+## License
 
----
-
-## üîÑ Development Roadmap
-
-- [x] UI Layer - Console-based views
-- [ ] Model Layer - Entity classes with relationships
-- [ ] Controller Layer - Request handlers
-- [ ] Business Logic - Recommendation engine, report generation
-- [ ] Data Persistence - File-based or database storage
-- [ ] API Integration - External broker/government APIs
-- [ ] Web UI - Optional web interface
-
----
-
-## üìù Contributing
-
-1. Fork the repository
-2. Create a feature branch: `git checkout -b feature/your-feature`
-3. Commit changes: `git commit -m 'Add your feature'`
-4. Push to branch: `git push origin feature/your-feature`
-5. Create a Pull Request
-
----
-
-## üìÑ License
-
-This project is open-source and available under the MIT License.
-
----
-
-## üìû Support
-
-For issues, questions, or suggestions:
-- Create an [Issue](https://github.com/vidushi212/shg-financial-tracker/issues)
-- Check existing [Documentation](https://github.com/vidushi212/shg-financial-tracker/wiki)
-
----
-
-## ‚ú® Acknowledgments
-
-This project implements a real-world solution for Self-Help Groups based on the SHG Financial Tracking & Advisory Platform specification, focusing on financial inclusion and collective decision-making in rural and semi-urban communities.
-
----
-
-**Last Updated:** 2026-03-23 09:17:47  
-**Project Status:** Active Development üöÄ
+This project is intended for academic and educational use.

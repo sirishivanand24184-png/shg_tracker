@@ -3,6 +3,7 @@ package com.shg.service;
 import com.shg.model.MonthlyReport;
 import com.shg.model.SHGGroup;
 import com.shg.model.Transaction;
+import com.shg.factory.FinancialRecordFactory;
 import com.shg.repository.SHGGroupRepository;
 import com.shg.repository.MonthlyReportRepository;
 import com.shg.repository.TransactionRepository;
@@ -20,13 +21,16 @@ public class MonthlyReportService {
     private final MonthlyReportRepository reportRepository;
     private final TransactionRepository transactionRepository;
     private final SHGGroupRepository shgGroupRepository;
+    private final FinancialRecordFactory financialRecordFactory;
 
     public MonthlyReportService(MonthlyReportRepository reportRepository,
                                 TransactionRepository transactionRepository,
-                                SHGGroupRepository shgGroupRepository) {
+                                SHGGroupRepository shgGroupRepository,
+                                FinancialRecordFactory financialRecordFactory) {
         this.reportRepository = reportRepository;
         this.transactionRepository = transactionRepository;
         this.shgGroupRepository = shgGroupRepository;
+        this.financialRecordFactory = financialRecordFactory;
     }
 
     public MonthlyReport generateMonthlyReport(Long shgGroupId, Integer month, Integer year) {
@@ -44,7 +48,14 @@ public class MonthlyReportService {
         double totalBalance = totalSavings - totalLoans - totalExpenses;
 
         MonthlyReport report = reportRepository.findByShgGroupIdAndMonthAndYear(shgGroupId, month, year)
-                .orElseGet(MonthlyReport::new);
+                .orElseGet(() -> financialRecordFactory.createMonthlyReport(
+                        month,
+                        year,
+                        group,
+                        totalSavings,
+                        totalLoans,
+                        totalExpenses,
+                        transactions.size()));
         report.setMonth(month);
         report.setYear(year);
         report.setShgGroup(group);

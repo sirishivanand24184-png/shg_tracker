@@ -4,6 +4,7 @@ import com.shg.model.MonthlyReport;
 import com.shg.model.SHGGroup;
 import com.shg.model.SHGMember;
 import com.shg.model.Transaction;
+import com.shg.factory.FinancialRecordFactory;
 import com.shg.repository.SHGGroupRepository;
 import com.shg.repository.SHGMemberRepository;
 import com.shg.repository.TransactionRepository;
@@ -24,13 +25,16 @@ public class TransactionService {
     private final TransactionRepository transactionRepository;
     private final SHGGroupRepository shgGroupRepository;
     private final SHGMemberRepository shgMemberRepository;
+    private final FinancialRecordFactory financialRecordFactory;
 
     public TransactionService(TransactionRepository transactionRepository,
                               SHGGroupRepository shgGroupRepository,
-                              SHGMemberRepository shgMemberRepository) {
+                              SHGMemberRepository shgMemberRepository,
+                              FinancialRecordFactory financialRecordFactory) {
         this.transactionRepository = transactionRepository;
         this.shgGroupRepository = shgGroupRepository;
         this.shgMemberRepository = shgMemberRepository;
+        this.financialRecordFactory = financialRecordFactory;
     }
 
     public Transaction createTransaction(Transaction transaction) {
@@ -114,20 +118,18 @@ public class TransactionService {
 
         List<MonthlyReport> reports = new ArrayList<>();
         for (YearMonth yearMonth : months) {
-            MonthlyReport report = new MonthlyReport();
-            report.setMonth(yearMonth.getMonthValue());
-            report.setYear(yearMonth.getYear());
-            report.setShgGroup(shgGroupRepository.findById(shgGroupId).orElse(null));
-
             List<Transaction> monthlyTransactions = transactions.stream()
                     .filter(transaction -> YearMonth.from(transaction.getTransactionDate()).equals(yearMonth))
                     .collect(Collectors.toList());
 
-            report.setTotalSavings(sumByType(monthlyTransactions, "SAVINGS"));
-            report.setTotalLoans(sumByType(monthlyTransactions, "LOAN"));
-            report.setTotalExpenses(sumByType(monthlyTransactions, "EXPENSE"));
-            report.setTotalBalance(report.getTotalSavings() - report.getTotalLoans() - report.getTotalExpenses());
-            report.setTransactionCount(monthlyTransactions.size());
+            MonthlyReport report = financialRecordFactory.createMonthlyReport(
+                    yearMonth.getMonthValue(),
+                    yearMonth.getYear(),
+                    shgGroupRepository.findById(shgGroupId).orElse(null),
+                    sumByType(monthlyTransactions, "SAVINGS"),
+                    sumByType(monthlyTransactions, "LOAN"),
+                    sumByType(monthlyTransactions, "EXPENSE"),
+                    monthlyTransactions.size());
             reports.add(report);
         }
         return reports;
